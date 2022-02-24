@@ -1,0 +1,35 @@
+name: Execute action
+
+on: 
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "The milestone title."
+        required: true
+      state:
+        description: "The expected milestone state."
+        default: "open"
+        required: false
+      description:
+        description: "The milestone description."
+        required: false
+      due_on:
+        description: "The milestone due date."
+        required: false
+
+
+jobs:
+  manage-label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test repository
+        id: manage_milestone
+        uses: ./
+        with:
+          title:  ${{ github.event.inputs.title }}
+          state:  ${{ github.event.inputs.state }}
+          description:  ${{ github.event.inputs.description }}
+          due_on:  ${{ github.event.inputs.due_on }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
