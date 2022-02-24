@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ManageLabelGitHubAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Julb.me :: GitHub action to manage labels</a> &gt; <a href="index.source.html" class="el_package">me.julb.applications.github.actions</a> &gt; <span class="el_source">ManageLabelGitHubAction.java</span></div><h1>ManageLabelGitHubAction.java</h1><pre class="source lang-java linenums">/**
+ * MIT License
+ *
+ * Copyright (c) 2017-2022 Julb
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the &quot;Software&quot;), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package me.julb.applications.github.actions;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.Sets;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.CompletionException;
+import java.util.regex.Pattern;
+
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.Setter;
+
+import org.apache.commons.io.FilenameUtils;
+import org.kohsuke.github.GHLabel;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+
+import me.julb.sdk.github.actions.kit.GitHubActionsKit;
+import me.julb.sdk.github.actions.spi.GitHubActionProvider;
+
+/**
+ * The action to manage labels. &lt;br&gt;
+ * @author Julb.
+ */
+<span class="fc" id="L63">public class ManageLabelGitHubAction implements GitHubActionProvider {</span>
+
+    /**
+     * The GitHub action kit.
+     */
+<span class="fc" id="L68">    @Setter(AccessLevel.PACKAGE)</span>
+    private GitHubActionsKit ghActionsKit = GitHubActionsKit.INSTANCE;
+
+    /**
+     * The GitHub API.
+     */
+<span class="fc" id="L74">    @Setter(AccessLevel.PACKAGE)</span>
+    private GitHub ghApi;
+
+    /**
+     * The GitHub repository.
+     */
+<span class="fc" id="L80">    @Setter(AccessLevel.PACKAGE)</span>
+    private GHRepository ghRepository;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void execute() {
+        try {
+            // Get inputs
+<span class="fc" id="L90">            var labelSourcesFrom = getInputFrom();</span>
+<span class="fc" id="L91">            var labelSkipDeletion = getInputSkipDelete();</span>
+
+            // Trace parameters
+<span class="fc" id="L94">            ghActionsKit.debug(String.format(&quot;parameters: [from: %s, skipDeletion: %s]&quot;, Arrays.toString(labelSourcesFrom), labelSkipDeletion));</span>
+
+            // Read GitHub repository.
+<span class="fc" id="L97">            connectApi();</span>
+
+            // Retrieve repository
+<span class="fc" id="L100">            ghRepository = ghApi.getRepository(ghActionsKit.getGitHubRepository());</span>
+
+            // Get label from sources.
+<span class="fc" id="L103">            var labelsToSynchronize = getInputLabels(labelSourcesFrom);</span>
+
+            // Get existing labels in repository.
+<span class="fc" id="L106">            var existingGHLabels = getGHLabels();</span>
+
+            // Get labels to create
+<span class="fc" id="L109">            var labelNamesToCreate = Sets.difference(labelsToSynchronize.keySet(), existingGHLabels.keySet());</span>
+<span class="fc" id="L110">            var labelsToCreate = new TreeSet&lt;LabelDTO&gt;();</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">            for (String labelNameToCreate : labelNamesToCreate) {</span>
+<span class="fc" id="L112">                labelsToCreate.add(labelsToSynchronize.get(labelNameToCreate));</span>
+<span class="fc" id="L113">            }</span>
+<span class="fc" id="L114">            createLabels(labelsToCreate);</span>
+
+            // Get labels to update
+<span class="fc" id="L117">            var labelNamesToUpdate = Sets.intersection(labelsToSynchronize.keySet(), existingGHLabels.keySet());</span>
+<span class="fc" id="L118">            var labelsToUpdate = new TreeMap&lt;LabelDTO, GHLabel&gt;();</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">            for (String labelNameToUpdate : labelNamesToUpdate) {</span>
+<span class="fc" id="L120">                labelsToUpdate.put(labelsToSynchronize.get(labelNameToUpdate), existingGHLabels.get(labelNameToUpdate));</span>
+<span class="fc" id="L121">            }</span>
+<span class="fc" id="L122">            updateLabels(labelsToUpdate);</span>
+
+            // Get labels to delete
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (!labelSkipDeletion) {</span>
+<span class="fc" id="L126">                var labelNamesToDelete = Sets.difference(existingGHLabels.keySet(), labelsToSynchronize.keySet());</span>
+<span class="fc" id="L127">                var labelsToDelete = new ArrayList&lt;GHLabel&gt;();</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                for (String labelNameToDelete : labelNamesToDelete) {</span>
+<span class="fc" id="L129">                    labelsToDelete.add(existingGHLabels.get(labelNameToDelete));</span>
+<span class="fc" id="L130">                }</span>
+<span class="fc" id="L131">                deleteLabels(labelsToDelete);</span>
+            }
+
+<span class="fc" id="L134">        } catch (Exception e) {</span>
+<span class="fc" id="L135">            throw new CompletionException(e);</span>
+<span class="fc" id="L136">        }</span>
+<span class="fc" id="L137">    }</span>
+
+    // ------------------------------------------ Utility methods.
+
+    /**
+     * Gets the &quot;from&quot; input.
+     * @return the &quot;from&quot; input.
+     */
+    String[] getInputFrom() {
+<span class="fc" id="L146">        return ghActionsKit.getRequiredMultilineInput(&quot;from&quot;);</span>
+    }
+
+    /**
+     * Gets the &quot;skip_delete&quot; input.
+     * @return the &quot;skip_delete&quot; input.
+     */
+    boolean getInputSkipDelete() {
+<span class="fc" id="L154">        return ghActionsKit.getBooleanInput(&quot;skip_delete&quot;).orElse(Boolean.FALSE);</span>
+    }
+
+    /**
+     * Connects to GitHub API.
+     * @throws IOException if an error occurs.
+     */
+    void connectApi()
+        throws IOException {
+<span class="fc" id="L163">        ghActionsKit.debug(&quot;github api url connection: check.&quot;);</span>
+
+        // Get token
+<span class="fc" id="L166">        var githubToken = ghActionsKit.getRequiredEnv(&quot;GITHUB_TOKEN&quot;);</span>
+
+        //@formatter:off
+<span class="fc" id="L169">        ghApi = Optional.ofNullable(ghApi).orElse(new GitHubBuilder()</span>
+<span class="fc" id="L170">            .withEndpoint(ghActionsKit.getGitHubApiUrl())</span>
+<span class="fc" id="L171">            .withOAuthToken(githubToken)</span>
+<span class="fc" id="L172">            .build());</span>
+<span class="fc" id="L173">        ghApi.checkApiUrlValidity();</span>
+<span class="fc" id="L174">        ghActionsKit.debug(&quot;github api url connection: ok.&quot;);</span>
+        //@formatter:on
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * Gets all {@link GHLabel} present in the repository.
+     * @return all {@link GHLabel} present in the repository.
+     * @throws IOException if an error occurs.
+     */
+<span class="fc bfc" id="L183" title="All 2 branches covered.">    Map&lt;String, LabelDTO&gt; getInputLabels(@NonNull String[] labelSources)</span>
+        throws IOException {
+        // Get JSON and YAML deserializer.
+<span class="fc" id="L186">        var jsonObjectMapper = new ObjectMapper();</span>
+<span class="fc" id="L187">        var yamlObjectMapper = new ObjectMapper(new YAMLFactory());</span>
+
+<span class="fc" id="L189">        Map&lt;String, LabelDTO&gt; map = new TreeMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        for (String labelSource : labelSources) {</span>
+<span class="fc" id="L192">            ghActionsKit.notice(String.format(&quot;processing source '%s'.&quot;, labelSource));</span>
+
+            // Determine object mapper.
+            ObjectMapper objectMapper;
+<span class="fc" id="L196">            var extension = FilenameUtils.getExtension(labelSource);</span>
+<span class="fc bfc" id="L197" title="All 4 branches covered.">            if (extension.equalsIgnoreCase(&quot;yaml&quot;) || extension.equalsIgnoreCase(&quot;yml&quot;)) {</span>
+<span class="fc" id="L198">                objectMapper = yamlObjectMapper;</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">            } else if (extension.equalsIgnoreCase(&quot;json&quot;)) {</span>
+<span class="fc" id="L200">                objectMapper = jsonObjectMapper;</span>
+            } else {
+<span class="fc" id="L202">                throw new IllegalArgumentException(labelSource);</span>
+            }
+
+            // Get input stream.
+<span class="fc" id="L206">            try (var is = getInputStream(labelSource)) {</span>
+                // Read and get labels.
+<span class="fc" id="L208">                var labels = objectMapper.readValue(is, new TypeReference&lt;ArrayList&lt;LabelDTO&gt;&gt;() {</span>
+                });
+<span class="fc" id="L210">                labels.forEach(label -&gt; map.put(label.nameLowerCase(), label));</span>
+<span class="fc" id="L211">                ghActionsKit.notice(String.format(&quot;%d labels fetched.&quot;, labels.size()));</span>
+            }
+        }
+
+<span class="fc" id="L215">        return map;</span>
+    }
+
+    /**
+     * Gets the input stream according to the given source.
+     * @param labelSource the label source.
+     * @return the stream to consume that source.
+     * @throws IOException if an error occurs.
+     */
+<span class="fc bfc" id="L224" title="All 2 branches covered.">    InputStream getInputStream(@NonNull String labelSource)</span>
+        throws IOException {
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        if (Pattern.matches(&quot;^[hH][tT][tT][pP][sS]?://.*&quot;, labelSource)) {</span>
+<span class="fc" id="L227">            return new URL(labelSource).openStream();</span>
+        } else {
+<span class="fc" id="L229">            return new FileInputStream(labelSource);</span>
+        }
+    }
+
+    /**
+     * Gets all {@link GHLabel} present in the repository.
+     * @return all {@link GHLabel} present in the repository.
+     * @throws IOException if an error occurs.
+     */
+    Map&lt;String, GHLabel&gt; getGHLabels()
+        throws IOException {
+
+<span class="fc" id="L241">        Map&lt;String, GHLabel&gt; map = new TreeMap&lt;&gt;();</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">        for (GHLabel ghLabel : ghRepository.listLabels()) {</span>
+<span class="fc" id="L243">            map.put(ghLabel.getName().toLowerCase(), ghLabel);</span>
+<span class="fc" id="L244">        }</span>
+
+<span class="fc" id="L246">        return map;</span>
+    }
+
+    /**
+     * Create the given labels in the repository.
+     * @param labelsToCreate the labels to create.
+     * @throws IOException if an error occurs.
+     */
+<span class="fc bfc" id="L254" title="All 2 branches covered.">    void createLabels(@NonNull Collection&lt;LabelDTO&gt; labelsToCreate)</span>
+        throws IOException {
+<span class="fc bfc" id="L256" title="All 2 branches covered.">        for (LabelDTO label : labelsToCreate) {</span>
+<span class="fc" id="L257">            this.ghActionsKit.notice(String.format(&quot;creating label '%s'&quot;, label.getName()));</span>
+<span class="fc" id="L258">            ghRepository.createLabel(label.getName(), label.getColor(), label.getDescription());</span>
+<span class="fc" id="L259">        }</span>
+<span class="fc" id="L260">    }</span>
+
+    /**
+     * Updates the given labels in the repository.
+     * @param labelsToUpdate the labels to update.
+     * @throws IOException if an error occurs.
+     */
+<span class="fc bfc" id="L267" title="All 2 branches covered.">    void updateLabels(@NonNull Map&lt;LabelDTO, GHLabel&gt; labelsToUpdate)</span>
+        throws IOException {
+<span class="fc bfc" id="L269" title="All 2 branches covered.">        for (Map.Entry&lt;LabelDTO, GHLabel&gt; entry : labelsToUpdate.entrySet()) {</span>
+<span class="fc" id="L270">            var sourceLabel = entry.getKey();</span>
+<span class="fc" id="L271">            var ghLabel = entry.getValue();</span>
+
+            // Trace
+<span class="fc" id="L274">            this.ghActionsKit.notice(String.format(&quot;updating label '%s'&quot;, ghLabel.getName()));</span>
+
+            //@formatter:off
+<span class="fc" id="L277">            ghLabel.update()</span>
+<span class="fc" id="L278">                .name(sourceLabel.getName())</span>
+<span class="fc" id="L279">                .color(sourceLabel.getColor())</span>
+<span class="fc" id="L280">                .description(sourceLabel.getDescription())</span>
+<span class="fc" id="L281">                .done();</span>
+            //@formatter:on
+<span class="fc" id="L283">        }</span>
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Deletes the given labels from the repository.
+     * @param labelsToDelete the labels to create.
+     * @throws IOException if an error occurs.
+     */
+<span class="fc bfc" id="L291" title="All 2 branches covered.">    void deleteLabels(@NonNull Collection&lt;GHLabel&gt; labelsToDelete)</span>
+        throws IOException {
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        for (GHLabel label : labelsToDelete) {</span>
+<span class="fc" id="L294">            this.ghActionsKit.notice(String.format(&quot;deleting label '%s'&quot;, label.getName()));</span>
+<span class="fc" id="L295">            label.delete();</span>
+<span class="fc" id="L296">        }</span>
+<span class="fc" id="L297">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

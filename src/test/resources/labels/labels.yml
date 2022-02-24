@@ -1,8 +1,0 @@
-- name: "label4"
-  color: "444444"
-- name: "label5"
-  color: "555555"
-  description: "label5 desc"
-- name: "label6"
-  color: "666666"
-  description: "label6 desc"

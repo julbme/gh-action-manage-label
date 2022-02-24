@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LabelDTO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Julb.me :: GitHub action to manage labels</a> &gt; <a href="index.source.html" class="el_package">me.julb.applications.github.actions</a> &gt; <span class="el_source">LabelDTO.java</span></div><h1>LabelDTO.java</h1><pre class="source lang-java linenums">/**
+ * MIT License
+ *
+ * Copyright (c) 2017-2022 Julb
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the &quot;Software&quot;), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package me.julb.applications.github.actions;
+
+import java.util.Objects;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * The label imported from specified source. &lt;br&gt;
+ * @author Julb.
+ */
+<span class="fc" id="L39">@NoArgsConstructor</span>
+<span class="fc bfc" id="L40" title="All 4 branches covered.">@RequiredArgsConstructor</span>
+<span class="fc bfc" id="L41" title="All 4 branches covered.">@AllArgsConstructor</span>
+@Getter
+public class LabelDTO implements Comparable&lt;LabelDTO&gt; {
+
+    //@formatter:off
+     /**
+     * The name attribute.
+     * -- GETTER --
+     * Getter for {@link #name} property.
+     * @return the value.
+     * -- SETTER --
+     * Setter for {@link #name} property.
+     * @param name the value to set.
+     */
+     //@formatter:on
+    @NonNull
+<span class="fc" id="L57">    private String name;</span>
+
+    //@formatter:off
+     /**
+     * The color attribute.
+     * -- GETTER --
+     * Getter for {@link #color} property.
+     * @return the value.
+     * -- SETTER --
+     * Setter for {@link #color} property.
+     * @param name the value to set.
+     */
+     //@formatter:on
+    @NonNull
+<span class="fc" id="L71">    private String color;</span>
+
+    //@formatter:off
+     /**
+     * The description attribute.
+     * -- GETTER --
+     * Getter for {@link #description} property.
+     * @return the value.
+     * -- SETTER --
+     * Setter for {@link #description} property.
+     * @param name the value to set.
+     */
+     //@formatter:on
+<span class="fc" id="L84">    private String description;</span>
+
+    // ------------------------------------------ Utility methods.
+
+    /**
+     * A method to use the lower-cased name for {@link Object#equals(Object)} and {@link Object#hashCode()}.
+     * @return the name in lowercase.
+     */
+    String nameLowerCase() {
+<span class="fc" id="L93">        return name.toLowerCase();</span>
+    }
+
+    // ------------------------------------------ Read methods.
+
+    // ------------------------------------------ Write methods.
+
+    // ------------------------------------------ Overridden methods.
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (this == obj) {</span>
+<span class="fc" id="L108">            return true;</span>
+        }
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (!(obj instanceof LabelDTO)) {</span>
+<span class="fc" id="L111">            return false;</span>
+        }
+<span class="fc" id="L113">        LabelDTO other = (LabelDTO) obj;</span>
+<span class="fc" id="L114">        return Objects.equals(nameLowerCase(), other.nameLowerCase());</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L122">        return Objects.hash(nameLowerCase());</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int compareTo(LabelDTO o) {
+<span class="fc" id="L130">        return nameLowerCase().compareTo(o.nameLowerCase());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
