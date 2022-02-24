@@ -4,7 +4,7 @@ ENV JAVA_TOOL_OPTIONS=""
 
 ARG SCM_URL=https://github.com/julbme/gh-action-manage-label
 ARG ARTIFACT_ID=gh-action-manage-label
-ARG VERSION=1.0.0-SNAPSHOT
+ARG VERSION=1.0.0
 
 WORKDIR /app
 
