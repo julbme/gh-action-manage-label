@@ -8,7 +8,7 @@
 	</parent>
 	<groupId>me.julb</groupId>
 	<artifactId>gh-action-manage-label</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>Julb.me :: GitHub action to manage labels</name>
