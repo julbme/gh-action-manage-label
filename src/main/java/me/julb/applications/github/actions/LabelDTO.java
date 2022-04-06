@@ -23,6 +23,7 @@
  */
 package me.julb.applications.github.actions;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import lombok.AllArgsConstructor;
@@ -89,7 +90,7 @@ public class LabelDTO implements Comparable<LabelDTO> {
      * @return the name in lowercase.
      */
     String nameLowerCase() {
-        return name.toLowerCase();
+        return name.toLowerCase(Locale.ROOT);
     }
 
     // ------------------------------------------ Read methods.
@@ -106,7 +107,10 @@ public class LabelDTO implements Comparable<LabelDTO> {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof LabelDTO)) {
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
         LabelDTO other = (LabelDTO) obj;

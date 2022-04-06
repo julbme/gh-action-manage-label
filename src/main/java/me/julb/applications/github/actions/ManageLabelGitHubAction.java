@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -193,9 +194,9 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
             // Determine object mapper.
             ObjectMapper objectMapper;
             var extension = FilenameUtils.getExtension(labelSource);
-            if (extension.equalsIgnoreCase("yaml") || extension.equalsIgnoreCase("yml")) {
+            if ("yaml".equalsIgnoreCase(extension) || "yml".equalsIgnoreCase(extension)) {
                 objectMapper = yamlObjectMapper;
-            } else if (extension.equalsIgnoreCase("json")) {
+            } else if ("json".equalsIgnoreCase(extension)) {
                 objectMapper = jsonObjectMapper;
             } else {
                 throw new IllegalArgumentException(labelSource);
@@ -236,7 +237,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
 
         Map<String, GHLabel> map = new TreeMap<>();
         for (GHLabel ghLabel : ghRepository.listLabels()) {
-            map.put(ghLabel.getName().toLowerCase(), ghLabel);
+            map.put(ghLabel.getName().toLowerCase(Locale.ROOT), ghLabel);
         }
 
         return map;
