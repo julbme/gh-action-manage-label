@@ -1,5 +1,5 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 Julb.me :: GitHub action to manage labels,me.julb,Application,0,5,0,0,0,2,0,1,0,1
-Julb.me :: GitHub action to manage labels,me.julb.applications.github.actions,LabelDTO,0,99,0,12,0,15,0,16,0,10
+Julb.me :: GitHub action to manage labels,me.julb.applications.github.actions,LabelDTO,2,104,1,13,1,16,1,16,0,10
 Julb.me :: GitHub action to manage labels,me.julb.applications.github.actions,ManageLabelGitHubAction.new TypeReference() {...},0,6,0,0,0,1,0,1,0,1
-Julb.me :: GitHub action to manage labels,me.julb.applications.github.actions,ManageLabelGitHubAction,0,505,0,36,0,95,0,33,0,15
+Julb.me :: GitHub action to manage labels,me.julb.applications.github.actions,ManageLabelGitHubAction,0,506,0,36,0,97,0,33,0,15

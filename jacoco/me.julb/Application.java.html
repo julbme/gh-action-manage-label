@@ -21,13 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb;
+
+import me.julb.sdk.github.actions.spi.GitHubActionServiceLoader;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-
-import me.julb.sdk.github.actions.spi.GitHubActionServiceLoader;
 
 /**
  * The main class to launch the action. &lt;br&gt;
@@ -41,7 +40,7 @@ public class Application {
      * @param args the arguments.
      */
     public static void main(String[] args) {
-<span class="fc" id="L44">        GitHubActionServiceLoader.getImplementation().orElseThrow().execute();</span>
-<span class="fc" id="L45">    }</span>
+<span class="fc" id="L43">        GitHubActionServiceLoader.getImplementation().orElseThrow().execute();</span>
+<span class="fc" id="L44">    }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
