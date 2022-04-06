@@ -55,8 +55,8 @@ jobs:
 
 ### Inputs
 
-| Name          | Type    | Default                     | Description                                                                                                                                              |
-| ------------- | ------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     Name      |  Type   |           Default           |                                                                       Description                                                                        |
+|---------------|---------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `from`        | string  | `.github/config/labels.yml` | Path of the file containing the labels. Can be `.yml`, `.yaml` or `.json`. A HTTP/HTTPS URL can be provided if the file is stored in another repository. |
 | `skip_delete` | boolean | `false`                     | If `true`, the process will not delete existing labels that are not defined in the file.                                                                 |
 

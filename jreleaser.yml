@@ -6,16 +6,16 @@ release:
       preset: conventional-commits
       links: true
       contributors:
-        format: '- {{contributorName}} ({{contributorUsernameAsLink}})'
+        format: "- {{contributorName}} ({{contributorUsernameAsLink}})"
 
 signing:
   active: ALWAYS
   armored: true
-    
+
 announce:
   twitter:
     active: RELEASE
-    status: '🚀 Manage Label GitHub Action {{projectVersion}} has been released! {{releaseNotesUrl}}'
+    status: "🚀 Manage Label GitHub Action {{projectVersion}} has been released! {{releaseNotesUrl}}"
 
 files:
   active: RELEASE

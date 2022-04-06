@@ -6,9 +6,10 @@ jobs:
   setup-labels:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Synchronize labels
-      uses: julbme/gh-action-manage-label@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Synchronize labels
+        uses: julbme/gh-action-manage-label@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

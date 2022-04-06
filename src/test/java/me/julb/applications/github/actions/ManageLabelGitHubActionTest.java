@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,18 +104,17 @@ class ManageLabelGitHubActionTest {
     /**
      * A nginx server
      */
-    //@formatter:off
+    // @formatter:off
     public NginxContainer<?> nginx = new NginxContainer<>(DockerImageName.parse("nginx"))
-        .withClasspathResourceMapping("labels/", "/usr/share/nginx/html", BindMode.READ_ONLY)
-        .waitingFor(new HttpWaitStrategy());
-    //@formatter:on
+            .withClasspathResourceMapping("labels/", "/usr/share/nginx/html", BindMode.READ_ONLY)
+            .waitingFor(new HttpWaitStrategy());
+    // @formatter:on
 
     /**
      * @throws java.lang.Exception
      */
     @BeforeEach
-    void setUp()
-        throws Exception {
+    void setUp() throws Exception {
         githubAction = new ManageLabelGitHubAction();
         githubAction.setGhActionsKit(ghActionsKitMock);
         githubAction.setGhApi(ghApiMock);
@@ -127,9 +125,9 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputFrom_thenReturnValue()
-        throws Exception {
-        when(this.ghActionsKitMock.getRequiredMultilineInput("from")).thenReturn(new String[] {"file1.yml", "file2.json"});
+    void whenGetInputFrom_thenReturnValue() throws Exception {
+        when(this.ghActionsKitMock.getRequiredMultilineInput("from"))
+                .thenReturn(new String[] {"file1.yml", "file2.json"});
 
         assertThat(this.githubAction.getInputFrom()).containsExactly("file1.yml", "file2.json");
 
@@ -150,8 +148,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputSkipDeleteProvided_thenReturnValue()
-        throws Exception {
+    void whenGetInputSkipDeleteProvided_thenReturnValue() throws Exception {
         when(this.ghActionsKitMock.getBooleanInput("skip_delete")).thenReturn(Optional.of(true));
 
         assertThat(this.githubAction.getInputSkipDelete()).isTrue();
@@ -163,8 +160,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputSkipDeleteNotProvided_thenReturnDefaultValue()
-        throws Exception {
+    void whenGetInputSkipDeleteNotProvided_thenReturnDefaultValue() throws Exception {
         when(this.ghActionsKitMock.getBooleanInput("skip_delete")).thenReturn(Optional.empty());
 
         assertThat(this.githubAction.getInputSkipDelete()).isFalse();
@@ -176,8 +172,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenExecuteManageLabelsWithSkipDelete_thenLabelCreatedUpdatedNotDeleted()
-        throws Exception {
+    void whenExecuteManageLabelsWithSkipDelete_thenLabelCreatedUpdatedNotDeleted() throws Exception {
         var spy = spy(this.githubAction);
 
         var label1 = new LabelDTO("label1", "000000");
@@ -215,8 +210,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenExecuteManageLabelsWithoutSkipDelete_thenLabelCreatedUpdatedDeleted()
-        throws Exception {
+    void whenExecuteManageLabelsWithoutSkipDelete_thenLabelCreatedUpdatedDeleted() throws Exception {
         var spy = spy(this.githubAction);
 
         var label1 = new LabelDTO("label1", "000000");
@@ -274,7 +268,8 @@ class ManageLabelGitHubActionTest {
     //
     // when(this.ghApiMock.getRepository("octocat/Hello-World")).thenReturn(ghRepositoryMock);
     // doReturn(Optional.empty()).when(spy).getGHMilestone("v1.0.0");
-    // doReturn(ghMilestoneCreated).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.OPEN, Optional.of("description"), Optional.of(dueOn), Optional.empty());
+    // doReturn(ghMilestoneCreated).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.OPEN,
+    // Optional.of("description"), Optional.of(dueOn), Optional.empty());
     //
     // spy.execute();
     //
@@ -286,7 +281,8 @@ class ManageLabelGitHubActionTest {
     // verify(spy).getInputDueOn();
     // verify(spy).connectApi();
     // verify(spy).getGHMilestone("v1.0.0");
-    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.OPEN, Optional.of("description"), Optional.of(dueOn), Optional.empty());
+    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.OPEN, Optional.of("description"), Optional.of(dueOn),
+    // Optional.empty());
     //
     // verify(this.ghApiMock).getRepository("octocat/Hello-World");
     // verify(this.ghActionsKitMock).setOutput(OutputVars.NUMBER.key(), 123);
@@ -313,7 +309,8 @@ class ManageLabelGitHubActionTest {
     //
     // when(this.ghApiMock.getRepository("octocat/Hello-World")).thenReturn(ghRepositoryMock);
     // doReturn(Optional.of(ghMilestoneExisting)).when(spy).getGHMilestone("v1.0.0");
-    // doReturn(ghMilestoneExisting).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(), Optional.of(ghMilestoneExisting));
+    // doReturn(ghMilestoneExisting).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(),
+    // Optional.empty(), Optional.of(ghMilestoneExisting));
     //
     // spy.execute();
     //
@@ -325,7 +322,8 @@ class ManageLabelGitHubActionTest {
     // verify(spy).getInputDueOn();
     // verify(spy).connectApi();
     // verify(spy).getGHMilestone("v1.0.0");
-    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(), Optional.of(ghMilestoneExisting));
+    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(),
+    // Optional.of(ghMilestoneExisting));
     //
     // verify(this.ghApiMock).getRepository("octocat/Hello-World");
     // verify(this.ghActionsKitMock).setOutput(OutputVars.NUMBER.key(), 123);
@@ -352,7 +350,8 @@ class ManageLabelGitHubActionTest {
     //
     // when(this.ghApiMock.getRepository("octocat/Hello-World")).thenReturn(ghRepositoryMock);
     // doReturn(Optional.empty()).when(spy).getGHMilestone("v1.0.0");
-    // doReturn(ghMilestoneCreated).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(), Optional.empty());
+    // doReturn(ghMilestoneCreated).when(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(),
+    // Optional.empty(), Optional.empty());
     //
     // spy.execute();
     //
@@ -364,7 +363,8 @@ class ManageLabelGitHubActionTest {
     // verify(spy).getInputDueOn();
     // verify(spy).connectApi();
     // verify(spy).getGHMilestone("v1.0.0");
-    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(), Optional.empty());
+    // verify(spy).createGHMilestone("v1.0.0", GHMilestoneState.CLOSED, Optional.empty(), Optional.empty(),
+    // Optional.empty());
     //
     // verify(this.ghApiMock).getRepository("octocat/Hello-World");
     // verify(this.ghActionsKitMock).setOutput(OutputVars.NUMBER.key(), 123);
@@ -448,8 +448,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenConnectApi_thenVerifyOK()
-        throws Exception {
+    void whenConnectApi_thenVerifyOK() throws Exception {
         when(ghActionsKitMock.getRequiredEnv("GITHUB_TOKEN")).thenReturn("token");
         when(ghActionsKitMock.getGitHubApiUrl()).thenReturn("https://api.github.com");
 
@@ -465,8 +464,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetGHLabels_thenReturnLabels()
-        throws Exception {
+    void whenGetGHLabels_thenReturnLabels() throws Exception {
         var ghLabel1 = Mockito.mock(GHLabel.class);
         when(ghLabel1.getName()).thenReturn("label1");
 
@@ -475,7 +473,8 @@ class ManageLabelGitHubActionTest {
 
         when(ghRepositoryMock.listLabels()).thenReturn(new LocalPagedIterable<>(List.of(ghLabel1, ghLabel2)));
 
-        assertThat(this.githubAction.getGHLabels()).containsAllEntriesOf(Map.of("label1", ghLabel1, "label2", ghLabel2));
+        assertThat(this.githubAction.getGHLabels())
+                .containsAllEntriesOf(Map.of("label1", ghLabel1, "label2", ghLabel2));
 
         verify(ghRepositoryMock).listLabels();
         verify(ghLabel1).getName();
@@ -486,8 +485,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputLabelsFromFile_thenGetLabels(@TempDir File tempDir)
-        throws Exception {
+    void whenGetInputLabelsFromFile_thenGetLabels(@TempDir File tempDir) throws Exception {
         // Copy files
         var labelFiles = new ArrayList<>();
         for (String resource : Arrays.asList("labels.yaml", "labels.yml", "labels.json")) {
@@ -500,12 +498,13 @@ class ManageLabelGitHubActionTest {
 
         // Read labels
         var fetchedLabels = this.githubAction.getInputLabels(labelFiles.toArray(String[]::new));
-        //@formatter:off
+        // @formatter:off
         assertThat(fetchedLabels)
-            .size().isEqualTo(8)
+                .size()
+                .isEqualTo(8)
                 .returnToMap()
-            .containsKeys("label1", "label2", "label3", "label4", "label5", "label6", "label7", "label8");
-        //@formatter:on
+                .containsKeys("label1", "label2", "label3", "label4", "label5", "label6", "label7", "label8");
+        // @formatter:on
 
         // Assert conflicting labels take the latest file read (here json)
         assertThat(fetchedLabels.get("label1").getName()).isEqualTo("label1");
@@ -527,8 +526,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputLabelsFromUrl_thenGetLabels()
-        throws Exception {
+    void whenGetInputLabelsFromUrl_thenGetLabels() throws Exception {
 
         try {
             nginx.start();
@@ -541,12 +539,13 @@ class ManageLabelGitHubActionTest {
 
             // Read labels
             var fetchedLabels = this.githubAction.getInputLabels(labelUrls.toArray(String[]::new));
-        //@formatter:off
-        assertThat(fetchedLabels)
-            .size().isEqualTo(8)
-                .returnToMap()
-            .containsKeys("label1", "label2", "label3", "label4", "label5", "label6", "label7", "label8");
-        //@formatter:on
+            // @formatter:off
+            assertThat(fetchedLabels)
+                    .size()
+                    .isEqualTo(8)
+                    .returnToMap()
+                    .containsKeys("label1", "label2", "label3", "label4", "label5", "label6", "label7", "label8");
+            // @formatter:on
 
             // Assert conflicting labels take the latest file read (here json)
             assertThat(fetchedLabels.get("label1").getName()).isEqualTo("label1");
@@ -571,18 +570,17 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputLabelsFromUnknownExtensionFile_thenThrowIllegalArgumentException()
-        throws Exception {
+    void whenGetInputLabelsFromUnknownExtensionFile_thenThrowIllegalArgumentException() throws Exception {
         // Copy files
-        assertThrows(IllegalArgumentException.class, () -> this.githubAction.getInputLabels(new String[] {"labels.txt"}));
+        assertThrows(
+                IllegalArgumentException.class, () -> this.githubAction.getInputLabels(new String[] {"labels.txt"}));
     }
 
     /**
      * Test method.
      */
     @Test
-    void whenGetInputLabelsNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenGetInputLabelsNull_thenThrowNullPointerException() throws Exception {
         // Copy files
         assertThrows(NullPointerException.class, () -> this.githubAction.getInputLabels(null));
     }
@@ -591,8 +589,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenGetInputStreamNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenGetInputStreamNull_thenThrowNullPointerException() throws Exception {
         // Copy files
         assertThrows(NullPointerException.class, () -> this.githubAction.getInputStream(null));
     }
@@ -601,8 +598,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenCreateLabels_thenCreateGhLabels()
-        throws Exception {
+    void whenCreateLabels_thenCreateGhLabels() throws Exception {
         var label1 = new LabelDTO("label1", "000000");
         var label2 = new LabelDTO("label2", "000000");
 
@@ -619,8 +615,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenCreateLabelsNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenCreateLabelsNull_thenThrowNullPointerException() throws Exception {
         assertThrows(NullPointerException.class, () -> this.githubAction.createLabels(null));
     }
 
@@ -628,8 +623,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenUpdateLabels_thenUpdateGhLabels()
-        throws Exception {
+    void whenUpdateLabels_thenUpdateGhLabels() throws Exception {
         var label1 = new LabelDTO("label1", "000000");
         var label2 = new LabelDTO("label2", "111111", "some desc");
 
@@ -665,8 +659,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenUpdateLabelsNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenUpdateLabelsNull_thenThrowNullPointerException() throws Exception {
         assertThrows(NullPointerException.class, () -> this.githubAction.updateLabels(null));
     }
 
@@ -674,8 +667,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenDeleteLabels_thenDeleteGhLabels()
-        throws Exception {
+    void whenDeleteLabels_thenDeleteGhLabels() throws Exception {
         var ghLabel1 = Mockito.mock(GHLabel.class);
         var ghLabel2 = Mockito.mock(GHLabel.class);
 
@@ -692,8 +684,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenDeleteLabelsNull_thenThrowNullPointerException()
-        throws Exception {
+    void whenDeleteLabelsNull_thenThrowNullPointerException() throws Exception {
         assertThrows(NullPointerException.class, () -> this.githubAction.deleteLabels(null));
     }
 
@@ -701,8 +692,7 @@ class ManageLabelGitHubActionTest {
      * Test method.
      */
     @Test
-    void whenCreateLabelDTONull_thenThrowNullPointerException()
-        throws Exception {
+    void whenCreateLabelDTONull_thenThrowNullPointerException() throws Exception {
         assertThrows(NullPointerException.class, () -> new LabelDTO(null, "000000"));
         assertThrows(NullPointerException.class, () -> new LabelDTO("label1", null));
         assertThrows(NullPointerException.class, () -> new LabelDTO(null, "000000", "some desc"));
@@ -714,14 +704,17 @@ class ManageLabelGitHubActionTest {
      */
     @Test
     @SuppressWarnings({"java:S5838", "java:S5845", "java:S5863"})
-    void whenComparingLabelDTO_thenReturnValidValue()
-        throws Exception {
+    void whenComparingLabelDTO_thenReturnValidValue() throws Exception {
         var label1 = new LabelDTO("LABEL1", "000000");
         var label2 = new LabelDTO("label2", "000000");
         var label3 = new LabelDTO("Label3", "000000");
         var label4 = new LabelDTO("label1", "000000", "label1 desc");
         assertThat(label1.compareTo(label2)).isNegative();
-        assertThat(label1).isEqualTo(label1).isNotEqualTo(label2).isNotEqualTo("Hello").isEqualTo(label4);
+        assertThat(label1)
+                .isEqualTo(label1)
+                .isNotEqualTo(label2)
+                .isNotEqualTo("Hello")
+                .isEqualTo(label4);
         assertThat(label2.compareTo(label3)).isNegative();
         assertThat(label1.compareTo(label4)).isZero();
         assertThat(label1).isEqualTo(label4);

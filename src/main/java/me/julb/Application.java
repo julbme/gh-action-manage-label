@@ -21,13 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb;
+
+import me.julb.sdk.github.actions.spi.GitHubActionServiceLoader;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-
-import me.julb.sdk.github.actions.spi.GitHubActionServiceLoader;
 
 /**
  * The main class to launch the action. <br>

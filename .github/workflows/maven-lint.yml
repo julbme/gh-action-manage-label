@@ -1,0 +1,30 @@
+name: Lint
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+      - "releases/**"
+    tags-ignore:
+      - "v*"
+  pull_request:
+    branches-ignore:
+      - gh-pages
+      - "releases/**"
+
+jobs:
+  spotless-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: "temurin"
+          cache: "maven"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - name: fix mvnw unix issues
+        run: chmod +x mvnw
+      - name: build with Maven
+        run: ./mvnw -B -U spotless:check

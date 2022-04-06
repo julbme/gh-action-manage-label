@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
 
 import java.util.Objects;
@@ -42,8 +41,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class LabelDTO implements Comparable<LabelDTO> {
 
-    //@formatter:off
-     /**
+    // @formatter:off
+    /**
      * The name attribute.
      * -- GETTER --
      * Getter for {@link #name} property.
@@ -52,12 +51,12 @@ public class LabelDTO implements Comparable<LabelDTO> {
      * Setter for {@link #name} property.
      * @param name the value to set.
      */
-     //@formatter:on
+    // @formatter:on
     @NonNull
     private String name;
 
-    //@formatter:off
-     /**
+    // @formatter:off
+    /**
      * The color attribute.
      * -- GETTER --
      * Getter for {@link #color} property.
@@ -66,12 +65,12 @@ public class LabelDTO implements Comparable<LabelDTO> {
      * Setter for {@link #color} property.
      * @param name the value to set.
      */
-     //@formatter:on
+    // @formatter:on
     @NonNull
     private String color;
 
-    //@formatter:off
-     /**
+    // @formatter:off
+    /**
      * The description attribute.
      * -- GETTER --
      * Getter for {@link #description} property.
@@ -80,7 +79,7 @@ public class LabelDTO implements Comparable<LabelDTO> {
      * Setter for {@link #description} property.
      * @param name the value to set.
      */
-     //@formatter:on
+    // @formatter:on
     private String description;
 
     // ------------------------------------------ Utility methods.

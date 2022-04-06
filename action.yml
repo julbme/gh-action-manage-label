@@ -7,7 +7,7 @@ branding:
 inputs:
   from:
     description: "The file containing the labels."
-    default: '.github/config/labels.yml'
+    default: ".github/config/labels.yml"
     required: false
   skip_delete:
     description: "Flag indicating if existing labels not configured should be kept."

@@ -2,185 +2,188 @@ name: Release
 on:
   push:
     branches:
-      - 'releases/trigger**'
+      - "releases/trigger**"
   pull_request:
     branches:
-      - 'releases/trigger**'
+      - "releases/trigger**"
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: actions/setup-java@v2
-      with:
-        java-version: 17
-        distribution: 'temurin'
-        cache: 'maven'
-    - name: change mvnw permission
-      run: chmod +x mvnw
-    - name: read current version
-      id: current_vars
-      run: |
-        echo ::set-output name=version::$(./mvnw -q validate -DcurrentReleaseVersion)
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: "temurin"
+          cache: "maven"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - name: fix mvnw unix issues
+        run: chmod +x mvnw
+      - name: read current version
+        id: current_vars
+        run: |
+          echo ::set-output name=version::$(./mvnw -q validate -DcurrentReleaseVersion)
 
-    - name: compute release vars
-      id: release_vars
-      uses: julbme/gh-action-semver-release-vars@v1
-      with:
-        package_version: ${{ steps.current_vars.outputs.version }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: compute release vars
+        id: release_vars
+        uses: julbme/gh-action-semver-release-vars@v1
+        with:
+          package_version: ${{ steps.current_vars.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: linting
-      run: echo "NOOP."
+      - name: linting
+        run: ./mvnw spotless:check
 
-    - name: updating parent pom if needed
-      run: ./mvnw -B versions:update-parent
+      - name: updating parent pom if needed
+        run: ./mvnw -B versions:update-parent
 
-    - name: updating version in files
-      run: ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.version }}
+      - name: updating version in files
+        run: ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.version }}
 
-    - name: build and test
-      run: ./mvnw -B verify
+      - name: build and test
+        run: ./mvnw -B verify
 
-    - name: analyze in sonarcloud with maven
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: ./mvnw -B sonar:sonar
+      - name: analyze in sonarcloud with maven
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./mvnw -B sonar:sonar
 
-    - name: build maven site
-      run: |
-        ./mvnw -B site:site site:stage
+      - name: build maven site
+        run: |
+          ./mvnw -B site:site site:stage
 
-    - name: perform a dry-un release with jreleaser
-      run: |
-        ./mvnw -B jreleaser:full-release -Djreleaser.dry.run=true
-      env:
-        JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        JRELEASER_COSIGN_PRIVATE_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PRIVATE_KEY }}
-        JRELEASER_COSIGN_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PUBLIC_KEY }}
-        JRELEASER_COSIGN_PASSWORD: ${{ secrets.OSS_BINARIES_COSIGN_PASSWORD }}
-        JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSS_BINARIES_GPG_PASSPHRASE }}
-        JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_GPG_PUBLIC_KEY }}
-        JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSS_BINARIES_GPG_PRIVATE_KEY }}
-        JRELEASER_TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
-        JRELEASER_TWITTER_CONSUMER_SECRET:  ${{ secrets.TWITTER_CONSUMER_SECRET }}
-        JRELEASER_TWITTER_ACCESS_TOKEN:  ${{ secrets.TWITTER_ACCESS_TOKEN }}
-        JRELEASER_TWITTER_ACCESS_TOKEN_SECRET:  ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+      - name: perform a dry-un release with jreleaser
+        run: |
+          ./mvnw -B jreleaser:full-release -Djreleaser.dry.run=true
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_COSIGN_PRIVATE_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PRIVATE_KEY }}
+          JRELEASER_COSIGN_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PUBLIC_KEY }}
+          JRELEASER_COSIGN_PASSWORD: ${{ secrets.OSS_BINARIES_COSIGN_PASSWORD }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSS_BINARIES_GPG_PASSPHRASE }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSS_BINARIES_GPG_PRIVATE_KEY }}
+          JRELEASER_TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          JRELEASER_TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          JRELEASER_TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          JRELEASER_TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
 
-    - uses: EndBug/add-and-commit@v8
-      with:
-        author_name: github-actions
-        author_email: 41898282+github-actions[bot]@users.noreply.github.com
-        message: "ci(release): release version v${{ steps.release_vars.outputs.version }}"
-        new_branch: ${{ steps.release_vars.outputs.run_branch }}
+      - uses: EndBug/add-and-commit@v8
+        with:
+          author_name: github-actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "ci(release): release version v${{ steps.release_vars.outputs.version }}"
+          new_branch: ${{ steps.release_vars.outputs.run_branch }}
 
-    - name: publish artifacts to maven central
-      run: |
-        ./mvnw -B package -DskipTests
+      - name: publish artifacts to maven central
+        run: |
+          ./mvnw -B package -DskipTests
 
-    - name: performing release with jreleaser
-      run: |
-        ./mvnw -B jreleaser:full-release
-      env:
-        JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        JRELEASER_COSIGN_PRIVATE_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PRIVATE_KEY }}
-        JRELEASER_COSIGN_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PUBLIC_KEY }}
-        JRELEASER_COSIGN_PASSWORD: ${{ secrets.OSS_BINARIES_COSIGN_PASSWORD }}
-        JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSS_BINARIES_GPG_PASSPHRASE }}
-        JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_GPG_PUBLIC_KEY }}
-        JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSS_BINARIES_GPG_PRIVATE_KEY }}
-        JRELEASER_TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
-        JRELEASER_TWITTER_CONSUMER_SECRET:  ${{ secrets.TWITTER_CONSUMER_SECRET }}
-        JRELEASER_TWITTER_ACCESS_TOKEN:  ${{ secrets.TWITTER_ACCESS_TOKEN }}
-        JRELEASER_TWITTER_ACCESS_TOKEN_SECRET:  ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
-        JRELEASER_BRANCH: ${{ steps.release_vars.outputs.run_branch }}
-    
-    - name: add major tag if present
-      if: ${{ steps.release_vars.outputs.git_tag_major }}
-      uses: julbme/gh-action-manage-tag@v1
-      with:
-        name: ${{ steps.release_vars.outputs.git_tag_major }}
-        from: ${{ steps.release_vars.outputs.git_tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: add minor tag if present
-      if: ${{ steps.release_vars.outputs.git_tag_minor }}
-      uses: julbme/gh-action-manage-tag@v1
-      with:
-        name: ${{ steps.release_vars.outputs.git_tag_minor }}
-        from: ${{ steps.release_vars.outputs.git_tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: performing release with jreleaser
+        run: |
+          ./mvnw -B jreleaser:full-release
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JRELEASER_COSIGN_PRIVATE_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PRIVATE_KEY }}
+          JRELEASER_COSIGN_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_COSIGN_PUBLIC_KEY }}
+          JRELEASER_COSIGN_PASSWORD: ${{ secrets.OSS_BINARIES_COSIGN_PASSWORD }}
+          JRELEASER_GPG_PASSPHRASE: ${{ secrets.OSS_BINARIES_GPG_PASSPHRASE }}
+          JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.OSS_BINARIES_GPG_PUBLIC_KEY }}
+          JRELEASER_GPG_SECRET_KEY: ${{ secrets.OSS_BINARIES_GPG_PRIVATE_KEY }}
+          JRELEASER_TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          JRELEASER_TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          JRELEASER_TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          JRELEASER_TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          JRELEASER_BRANCH: ${{ steps.release_vars.outputs.run_branch }}
 
-    - name: publish website to gh-pages
-      uses: JamesIves/github-pages-deploy-action@v4.2.3
-      with:
-        branch: gh-pages
-        folder: ${{ secrets.MAVEN_SITE_STAGE_LOCATION }}
-    
-    - name: merge back changes to target branch
-      uses: julbme/gh-action-merge-branch@v1
-      with:
-        from: ${{ steps.release_vars.outputs.run_branch }}
-        to: ${{ steps.release_vars.outputs.target_branch }}
-        message: "Merge releases branch into ${{ steps.release_vars.outputs.target_branch }}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: add major tag if present
+        if: ${{ steps.release_vars.outputs.git_tag_major }}
+        uses: julbme/gh-action-manage-tag@v1
+        with:
+          name: ${{ steps.release_vars.outputs.git_tag_major }}
+          from: ${{ steps.release_vars.outputs.git_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: switch back to target branch
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ steps.release_vars.outputs.target_branch }}
-    
-    - name: bumping version
-      id: next_vars
-      run: |
-        ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.next_patch_snapshot_version }}
-        echo ::set-output name=next_version::$(./mvnw -q validate -DcurrentVersion)
-        echo ::set-output name=next_released_version::$(./mvnw -q validate -DcurrentReleaseVersion)
+      - name: add minor tag if present
+        if: ${{ steps.release_vars.outputs.git_tag_minor }}
+        uses: julbme/gh-action-manage-tag@v1
+        with:
+          name: ${{ steps.release_vars.outputs.git_tag_minor }}
+          from: ${{ steps.release_vars.outputs.git_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: EndBug/add-and-commit@v7
-      with:
-        author_name: github-actions
-        author_email: 41898282+github-actions[bot]@users.noreply.github.com
-        message: "ci(release): bump version ${{ steps.release_vars.outputs.version }} -> ${{ steps.next_vars.outputs.next_version }}"
-        branch: "${{ steps.release_vars.outputs.target_branch }}"
+      - name: publish website to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4.2.3
+        with:
+          branch: gh-pages
+          folder: ${{ secrets.MAVEN_SITE_STAGE_LOCATION }}
 
-    - name: close old milestone
-      uses: julbme/gh-action-manage-milestone@v1
-      with:
-        title: v${{ steps.release_vars.outputs.version }}
-        state: 'closed'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: merge back changes to target branch
+        uses: julbme/gh-action-merge-branch@v1
+        with:
+          from: ${{ steps.release_vars.outputs.run_branch }}
+          to: ${{ steps.release_vars.outputs.target_branch }}
+          message: "Merge releases branch into ${{ steps.release_vars.outputs.target_branch }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: open new milestone
-      uses: julbme/gh-action-manage-milestone@v1
-      with:
-        title: v${{ steps.next_vars.outputs.next_released_version }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: switch back to target branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.release_vars.outputs.target_branch }}
 
-    - name: drop release trigger branch
-      if: always()
-      uses: julbme/gh-action-manage-branch@v1
-      with:
-        name: ${{ steps.release_vars.outputs.trigger_branch }}
-        state: absent
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: bumping version
+        id: next_vars
+        run: |
+          ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.next_patch_snapshot_version }}
+          echo ::set-output name=next_version::$(./mvnw -q validate -DcurrentVersion)
+          echo ::set-output name=next_released_version::$(./mvnw -q validate -DcurrentReleaseVersion)
 
-    - name: drop release run branch
-      if: always()
-      uses: julbme/gh-action-manage-branch@v1
-      with:
-        name: ${{ steps.release_vars.outputs.run_branch }}
-        state: absent
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: EndBug/add-and-commit@v7
+        with:
+          author_name: github-actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "ci(release): bump version ${{ steps.release_vars.outputs.version }} -> ${{ steps.next_vars.outputs.next_version }}"
+          branch: "${{ steps.release_vars.outputs.target_branch }}"
+
+      - name: close old milestone
+        uses: julbme/gh-action-manage-milestone@v1
+        with:
+          title: v${{ steps.release_vars.outputs.version }}
+          state: "closed"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: open new milestone
+        uses: julbme/gh-action-manage-milestone@v1
+        with:
+          title: v${{ steps.next_vars.outputs.next_released_version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: drop release trigger branch
+        if: always()
+        uses: julbme/gh-action-manage-branch@v1
+        with:
+          name: ${{ steps.release_vars.outputs.trigger_branch }}
+          state: absent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: drop release run branch
+        if: always()
+        uses: julbme/gh-action-manage-branch@v1
+        with:
+          name: ${{ steps.release_vars.outputs.run_branch }}
+          state: absent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

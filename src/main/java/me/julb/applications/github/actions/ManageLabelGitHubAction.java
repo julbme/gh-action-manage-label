@@ -21,13 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package me.julb.applications.github.actions;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.google.common.collect.Sets;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -43,18 +37,23 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Pattern;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.Setter;
-
 import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.github.GHLabel;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.Sets;
+
 import me.julb.sdk.github.actions.kit.GitHubActionsKit;
 import me.julb.sdk.github.actions.spi.GitHubActionProvider;
+
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * The action to manage labels. <br>
@@ -91,7 +90,8 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
             var labelSkipDeletion = getInputSkipDelete();
 
             // Trace parameters
-            ghActionsKit.debug(String.format("parameters: [from: %s, skipDeletion: %s]", Arrays.toString(labelSourcesFrom), labelSkipDeletion));
+            ghActionsKit.debug(String.format(
+                    "parameters: [from: %s, skipDeletion: %s]", Arrays.toString(labelSourcesFrom), labelSkipDeletion));
 
             // Read GitHub repository.
             connectApi();
@@ -158,21 +158,21 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * Connects to GitHub API.
      * @throws IOException if an error occurs.
      */
-    void connectApi()
-        throws IOException {
+    void connectApi() throws IOException {
         ghActionsKit.debug("github api url connection: check.");
 
         // Get token
         var githubToken = ghActionsKit.getRequiredEnv("GITHUB_TOKEN");
 
-        //@formatter:off
-        ghApi = Optional.ofNullable(ghApi).orElse(new GitHubBuilder()
-            .withEndpoint(ghActionsKit.getGitHubApiUrl())
-            .withOAuthToken(githubToken)
-            .build());
+        // @formatter:off
+        ghApi = Optional.ofNullable(ghApi)
+                .orElse(new GitHubBuilder()
+                        .withEndpoint(ghActionsKit.getGitHubApiUrl())
+                        .withOAuthToken(githubToken)
+                        .build());
         ghApi.checkApiUrlValidity();
         ghActionsKit.debug("github api url connection: ok.");
-        //@formatter:on
+        // @formatter:on
     }
 
     /**
@@ -180,8 +180,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @return all {@link GHLabel} present in the repository.
      * @throws IOException if an error occurs.
      */
-    Map<String, LabelDTO> getInputLabels(@NonNull String[] labelSources)
-        throws IOException {
+    Map<String, LabelDTO> getInputLabels(@NonNull String[] labelSources) throws IOException {
         // Get JSON and YAML deserializer.
         var jsonObjectMapper = new ObjectMapper();
         var yamlObjectMapper = new ObjectMapper(new YAMLFactory());
@@ -205,8 +204,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
             // Get input stream.
             try (var is = getInputStream(labelSource)) {
                 // Read and get labels.
-                var labels = objectMapper.readValue(is, new TypeReference<ArrayList<LabelDTO>>() {
-                });
+                var labels = objectMapper.readValue(is, new TypeReference<ArrayList<LabelDTO>>() {});
                 labels.forEach(label -> map.put(label.nameLowerCase(), label));
                 ghActionsKit.notice(String.format("%d labels fetched.", labels.size()));
             }
@@ -221,8 +219,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @return the stream to consume that source.
      * @throws IOException if an error occurs.
      */
-    InputStream getInputStream(@NonNull String labelSource)
-        throws IOException {
+    InputStream getInputStream(@NonNull String labelSource) throws IOException {
         if (Pattern.matches("^[hH][tT][tT][pP][sS]?://.*", labelSource)) {
             return new URL(labelSource).openStream();
         } else {
@@ -235,8 +232,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @return all {@link GHLabel} present in the repository.
      * @throws IOException if an error occurs.
      */
-    Map<String, GHLabel> getGHLabels()
-        throws IOException {
+    Map<String, GHLabel> getGHLabels() throws IOException {
 
         Map<String, GHLabel> map = new TreeMap<>();
         for (GHLabel ghLabel : ghRepository.listLabels()) {
@@ -251,8 +247,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @param labelsToCreate the labels to create.
      * @throws IOException if an error occurs.
      */
-    void createLabels(@NonNull Collection<LabelDTO> labelsToCreate)
-        throws IOException {
+    void createLabels(@NonNull Collection<LabelDTO> labelsToCreate) throws IOException {
         for (LabelDTO label : labelsToCreate) {
             this.ghActionsKit.notice(String.format("creating label '%s'", label.getName()));
             ghRepository.createLabel(label.getName(), label.getColor(), label.getDescription());
@@ -264,8 +259,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @param labelsToUpdate the labels to update.
      * @throws IOException if an error occurs.
      */
-    void updateLabels(@NonNull Map<LabelDTO, GHLabel> labelsToUpdate)
-        throws IOException {
+    void updateLabels(@NonNull Map<LabelDTO, GHLabel> labelsToUpdate) throws IOException {
         for (Map.Entry<LabelDTO, GHLabel> entry : labelsToUpdate.entrySet()) {
             var sourceLabel = entry.getKey();
             var ghLabel = entry.getValue();
@@ -273,13 +267,13 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
             // Trace
             this.ghActionsKit.notice(String.format("updating label '%s'", ghLabel.getName()));
 
-            //@formatter:off
+            // @formatter:off
             ghLabel.update()
-                .name(sourceLabel.getName())
-                .color(sourceLabel.getColor())
-                .description(sourceLabel.getDescription())
-                .done();
-            //@formatter:on
+                    .name(sourceLabel.getName())
+                    .color(sourceLabel.getColor())
+                    .description(sourceLabel.getDescription())
+                    .done();
+            // @formatter:on
         }
     }
 
@@ -288,8 +282,7 @@ public class ManageLabelGitHubAction implements GitHubActionProvider {
      * @param labelsToDelete the labels to create.
      * @throws IOException if an error occurs.
      */
-    void deleteLabels(@NonNull Collection<GHLabel> labelsToDelete)
-        throws IOException {
+    void deleteLabels(@NonNull Collection<GHLabel> labelsToDelete) throws IOException {
         for (GHLabel label : labelsToDelete) {
             this.ghActionsKit.notice(String.format("deleting label '%s'", label.getName()));
             label.delete();
