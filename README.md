@@ -45,12 +45,28 @@ jobs:
         uses: julbme/gh-action-manage-label@v1
         with:
           from: |
+            https://raw.githubusercontent.com/my-org/my-repositorty/path-to-folder-with/common-labels.yml
             .github/config/labels.yml
             .github/config/other-labels.yml
-            https://some-host.com/labels.ymls
           skip_delete: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+- Label configuration structure in YAML file:
+
+```yaml
+- name: "bug"
+  color: "D73A4A"
+  description: "Something isn't working"
+
+- name: "critical"
+  color: "FF1493"
+  description: "High urgency label"
+
+- name: "docs"
+  color: "808000"
+  description: "Improvements or additions to documentation"
 ```
 
 ### Inputs
