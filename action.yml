@@ -1,4 +1,4 @@
-name: Manage labels
+name: Manage GitHub labels
 description: "Manage the labels for a given repository"
 author: "julbme"
 branding:
