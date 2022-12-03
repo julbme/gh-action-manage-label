@@ -19,15 +19,18 @@ jobs:
           java-version: 17
           distribution: "temurin"
           cache: "maven"
+
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
+
       - name: fix mvnw unix issues
         run: chmod +x mvnw
+
       - name: read current version
         id: current_vars
         run: |
-          echo ::set-output name=version::$(./mvnw -q validate -DcurrentReleaseVersion)
+          echo ::set-output name=version::$(./mvnw -q validate help:evaluate -Dexpression=j3.var.releaseVersion -DforceStdout)
 
       - name: compute release vars
         id: release_vars
@@ -40,11 +43,15 @@ jobs:
       - name: linting
         run: ./mvnw spotless:check
 
-      - name: updating parent pom if needed
-        run: ./mvnw -B versions:update-parent
+      - name: update versions in project
+        run: |
+          ./mvnw -B versions:update-parent -DallowMajorUpdates=false versions:commit
+          ./mvnw -B versions:set -DnewVersion=${{ steps.release_vars.outputs.version }} versions:commit
+          ./mvnw -B versions:update-properties -DallowIncrementalUpdates=false -Dincludes=me.julb:*:*:*:* versions:commit
+          ./mvnw -B validate -Pupdate-version-files
 
-      - name: updating version in files
-        run: ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.version }}
+      - name: enforcing no SNAPSHOTs remaining
+        run: ./mvnw -B enforcer:enforce -Drules=requireReleaseVersion,requireReleaseDeps
 
       - name: build and test
         run: ./mvnw -B verify
@@ -144,9 +151,10 @@ jobs:
       - name: bumping version
         id: next_vars
         run: |
-          ./mvnw -B validate -DchangeVersionCustom=${{ steps.release_vars.outputs.next_patch_snapshot_version }}
-          echo ::set-output name=next_version::$(./mvnw -q validate -DcurrentVersion)
-          echo ::set-output name=next_released_version::$(./mvnw -q validate -DcurrentReleaseVersion)
+          ./mvnw -B versions:set -DnewVersion=${{ steps.release_vars.outputs.next_patch_snapshot_version }} versions:commit
+          ./mvnw -B validate -Pupdate-version-files
+          echo ::set-output name=next_version::$(./mvnw -q validate help:evaluate -Dexpression=j3.var.originalVersion -DforceStdout)
+          echo ::set-output name=next_released_version::$(./mvnw -q validate help:evaluate -Dexpression=j3.var.releaseVersion -DforceStdout)
 
       - uses: EndBug/add-and-commit@v7
         with:
